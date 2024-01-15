@@ -1,7 +1,6 @@
-from flask import Flask, request, render_template, redirect, url_for, make_response
+from flask import Flask, request, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-import csv
-from io import StringIO
+import ipaddress
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ipam.db'
@@ -9,78 +8,36 @@ db = SQLAlchemy(app)
 
 class TopLevelSubnet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    subnet = db.Column(db.String(18), unique=True, nullable=False)
+    subnet = db.Column(db.String(50), nullable=False)
+    divisions = db.relationship('SubnetDivision', backref='top_level_subnet', lazy=True)
 
-    def __repr__(self):
-        return f'<TopLevelSubnet {self.subnet}>'
-
-class Subnet(db.Model):
+class SubnetDivision(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    vlan = db.Column(db.Integer, nullable=False)
-    subnet = db.Column(db.String(18), nullable=False)
-    parent_id = db.Column(db.Integer, db.ForeignKey('top_level_subnet.id'), nullable=False)
-    parent = db.relationship('TopLevelSubnet', backref=db.backref('subnets', lazy=True))
-
-    def __repr__(self):
-        return f'<Subnet {self.name}, VLAN: {self.vlan}, Address: {self.subnet}>'
-
-def create_tables():
-    db.create_all()
+    network_address = db.Column(db.String(50), nullable=False)
+    broadcast_address = db.Column(db.String(50), nullable=False)
+    usable_range = db.Column(db.String(100), nullable=False)
+    vlan_id = db.Column(db.Integer, nullable=True)
+    top_level_subnet_id = db.Column(db.Integer, db.ForeignKey('top_level_subnet.id'), nullable=False)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        if 'top_level_subnet' in request.form:
-            new_top_level_subnet = TopLevelSubnet(subnet=request.form['top_level_subnet'])
-            db.session.add(new_top_level_subnet)
-            db.session.commit()
-        elif 'subnet_name' in request.form:
-            new_subnet = Subnet(
-                name=request.form['subnet_name'],
-                vlan=request.form['vlan'],
-                subnet=request.form['subnet_address'],
-                parent_id=request.form['top_level_subnet_id']
-            )
-            db.session.add(new_subnet)
-            db.session.commit()
+        # Add top-level subnet logic
+        pass
 
     top_level_subnets = TopLevelSubnet.query.all()
-    subnets = Subnet.query.all()
-    return render_template('index.html', top_level_subnets=top_level_subnets, subnets=subnets)
+    return render_template('index.html', top_level_subnets=top_level_subnets)
 
-@app.route('/delete_subnet/<int:id>')
-def delete_subnet(id):
-    subnet_to_delete = Subnet.query.get_or_404(id)
-    db.session.delete(subnet_to_delete)
-    db.session.commit()
-    return redirect(url_for('index'))
+def divide_subnet(top_subnet, division_size):
+    network = ipaddress.ip_network(top_subnet)
+    subnets = list(network.subnets(new_prefix=division_size))
+    return [(subnet.network_address, subnet.broadcast_address, subnet) for subnet in subnets]
 
-@app.route('/delete_top_level_subnet/<int:id>')
-def delete_top_level_subnet(id):
-    top_level_subnet_to_delete = TopLevelSubnet.query.get_or_404(id)
-    db.session.delete(top_level_subnet_to_delete)
-    db.session.commit()
-    return redirect(url_for('index'))
-
-@app.route('/export_csv')
-def export_csv():
-    si = StringIO()
-    cw = csv.writer(si)
-    cw.writerow(['Subnet Name', 'Subnet Address', 'VLAN', 'Top Level Subnet'])
-
-    subnets = Subnet.query.all()
-    for subnet in subnets:
-        top_level_subnet = TopLevelSubnet.query.get(subnet.parent_id)
-        cw.writerow([subnet.name, subnet.subnet, subnet.vlan, top_level_subnet.subnet])
-
-    output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = "attachment; filename=subnets.csv"
-    output.headers["Content-type"] = "text/csv"
-    return output
-
+@app.route('/divide_subnet', methods=['POST'])
+def divide():
+    # Logic to divide subnet
+    pass
 
 if __name__ == '__main__':
-    with app.app_context():
-        create_tables()
+    db.create_all()
     app.run(debug=True)
