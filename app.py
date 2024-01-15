@@ -15,29 +15,41 @@ class SubnetDivision(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     network_address = db.Column(db.String(50), nullable=False)
     broadcast_address = db.Column(db.String(50), nullable=False)
-    usable_range = db.Column(db.String(100), nullable=False)
     vlan_id = db.Column(db.Integer, nullable=True)
     top_level_subnet_id = db.Column(db.Integer, db.ForeignKey('top_level_subnet.id'), nullable=False)
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        # Add top-level subnet logic
-        pass
+        new_subnet = TopLevelSubnet(subnet=request.form['top_level_subnet'])
+        db.session.add(new_subnet)
+        db.session.commit()
+        return redirect(url_for('index'))
 
     top_level_subnets = TopLevelSubnet.query.all()
     return render_template('index.html', top_level_subnets=top_level_subnets)
 
 def divide_subnet(top_subnet, division_size):
-    network = ipaddress.ip_network(top_subnet)
+    network = ipaddress.ip_network(top_subnet.subnet)
     subnets = list(network.subnets(new_prefix=division_size))
-    return [(subnet.network_address, subnet.broadcast_address, subnet) for subnet in subnets]
+    return [(str(subnet.network_address), str(subnet.broadcast_address)) for subnet in subnets]
 
-@app.route('/divide_subnet', methods=['POST'])
-def divide():
-    # Logic to divide subnet
-    pass
+@app.route('/divide_subnet/<int:subnet_id>', methods=['POST'])
+def divide(subnet_id):
+    division_size = int(request.form['division_size'])
+    top_subnet = TopLevelSubnet.query.get_or_404(subnet_id)
+    divided_subnets = divide_subnet(top_subnet, division_size)
+    
+    for network_address, broadcast_address in divided_subnets:
+        new_division = SubnetDivision(network_address=network_address, broadcast_address=broadcast_address, top_level_subnet_id=subnet_id)
+        db.session.add(new_division)
+    
+    db.session.commit()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    db.create_all()
     app.run(debug=True)
