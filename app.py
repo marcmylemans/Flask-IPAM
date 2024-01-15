@@ -49,6 +49,8 @@ def divide(subnet_id):
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    db.create_all()  # Create tables before running the application
+    with app.app_context():
+        db.create_all()  # Create tables within the application context
     app.run(debug=True)
+
 
