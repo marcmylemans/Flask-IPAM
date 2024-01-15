@@ -12,7 +12,6 @@ class IPAddress(db.Model):
     def __repr__(self):
         return f'<IPAddress {self.address}>'
 
-@app.before_first_request
 def create_tables():
     db.create_all()
 
@@ -37,4 +36,5 @@ def delete_ip(id):
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
+    create_tables()  # Create tables before running the application
     app.run(debug=True)
