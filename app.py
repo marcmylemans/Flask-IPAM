@@ -48,6 +48,7 @@ def divide(subnet_id):
     db.session.commit()
     return redirect(url_for('index'))
 
-if name == 'main':
-db.create_all() # Create tables before running the application
-app.run(debug=True)
+if __name__ == '__main__':
+    db.create_all()  # Create tables before running the application
+    app.run(debug=True)
+
