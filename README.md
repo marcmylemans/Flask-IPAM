@@ -18,6 +18,25 @@ To set up and run this IPAM tool, follow these steps:
 git clone [repository-url]
 cd [repository-name]
 ```
+Create virtual Environment
+
+```
+python -m venv venv
+```
+
+And activate it with:
+
+On Windows: 
+
+```
+venv\Scripts\activate
+```
+
+On MacOS/Linux: source 
+
+```
+venv/bin/activate
+```
 
 2) **Install Dependencies**
 
