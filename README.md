@@ -15,8 +15,8 @@ To set up and run this IPAM tool, follow these steps:
 1) **Clone the Repository**
 
 ```bash
-git clone [repository-url]
-cd [repository-name]
+git clone https://github.com/marcmylemans/Flask-IPAM.git
+cd Flask-IPAM
 ```
 Create virtual Environment
 
