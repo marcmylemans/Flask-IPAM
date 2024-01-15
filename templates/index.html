@@ -2,13 +2,39 @@
 
 {% block body %}
     <h2>IP Address Management</h2>
-    <form action="/add" method="post">
-        <input type="text" name="ip_address" placeholder="Enter IP Address" required>
-        <input type="submit" value="Add IP">
+
+    <!-- Form to Add Top Level Subnet -->
+    <form action="/" method="post">
+        <input type="text" name="top_level_subnet" placeholder="Enter Top Level Subnet (e.g., 10.0.0.0/8)" required>
+        <input type="submit" value="Add Top Level Subnet">
     </form>
+
+    <!-- Form to Add Subnet -->
+    <form action="/" method="post">
+        <input type="text" name="subnet_name" placeholder="Enter Subnet Name" required>
+        <input type="text" name="subnet_address" placeholder="Enter Subnet Address (e.g., 10.0.0.0/24)" required>
+        <input type="number" name="vlan" placeholder="Enter VLAN" required>
+        <select name="top_level_subnet_id">
+            {% for top_level_subnet in top_level_subnets %}
+                <option value="{{ top_level_subnet.id }}">{{ top_level_subnet.subnet }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Add Subnet">
+    </form>
+
+    <!-- Display Top Level Subnets -->
+    <h3>Top Level Subnets</h3>
     <ul>
-        {% for ip in ips %}
-            <li>{{ ip.address }} <a href="/delete/{{ ip.id }}">Delete</a></li>
+        {% for top_level_subnet in top_level_subnets %}
+            <li>{{ top_level_subnet.subnet }} <a href="/delete_top_level_subnet/{{ top_level_subnet.id }}">Delete</a></li>
+        {% endfor %}
+    </ul>
+
+    <!-- Display Subnets -->
+    <h3>Subnets</h3>
+    <ul>
+        {% for subnet in subnets %}
+            <li>{{ subnet.name }} ({{ subnet.subnet }}) VLAN: {{ subnet.vlan }} <a href="/delete_subnet/{{ subnet.id }}">Delete</a></li>
         {% endfor %}
     </ul>
 {% endblock %}
