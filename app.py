@@ -18,9 +18,6 @@ class SubnetDivision(db.Model):
     vlan_id = db.Column(db.Integer, nullable=True)
     top_level_subnet_id = db.Column(db.Integer, db.ForeignKey('top_level_subnet.id'), nullable=False)
 
-@app.before_first_request
-def create_tables():
-    db.create_all()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -51,5 +48,6 @@ def divide(subnet_id):
     db.session.commit()
     return redirect(url_for('index'))
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if name == 'main':
+db.create_all() # Create tables before running the application
+app.run(debug=True)
