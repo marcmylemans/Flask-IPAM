@@ -1,67 +1,23 @@
-{% extends 'base.html' %}
-
-{% block body %}
-    <h2 class="mb-3">IP Address Management</h2>
-
-    <!-- Form to Add Top Level Subnet -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Add Top Level Subnet</h5>
-            <form action="/" method="post" class="form-inline">
-                <input type="text" name="top_level_subnet" class="form-control mr-2 mb-2" placeholder="Enter Top Level Subnet (e.g., 10.0.0.0/8)" required>
-                <button type="submit" class="btn btn-primary mb-2">Add Top Level Subnet</button>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IPAM Tool</title>
+</head>
+<body>
+    <h2>IP Address Management</h2>
+    <form action="/" method="post">
+        <input type="text" name="top_level_subnet" placeholder="Enter Top Level Subnet (e.g., 10.0.0.0/22)">
+        <input type="submit" value="Add Top Level Subnet">
+    </form>
+    <hr>
+    {% for subnet in top_level_subnets %}
+        <div>
+            <h3>{{ subnet.subnet }}</h3>
+            <form action="/divide_subnet/{{ subnet.id }}" method="post">
+                <input type="number" name="division_size" placeholder="Division Size (e.g., 24)">
+                <input type="submit" value="Divide Subnet">
             </form>
         </div>
-    </div>
-
-    <!-- Form to Add Subnet -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Add Subnet</h5>
-            <form action="/" method="post" class="form-inline">
-                <input type="text" name="subnet_name" class="form-control mr-2 mb-2" placeholder="Enter Subnet Name" required>
-                <input type="text" name="subnet_address" class="form-control mr-2 mb-2" placeholder="Enter Subnet Address (e.g., 10.0.0.0/24)" required>
-                <input type="number" name="vlan" class="form-control mr-2 mb-2" placeholder="Enter VLAN" required>
-                <select name="top_level_subnet_id" class="form-control mr-2 mb-2">
-                    {% for top_level_subnet in top_level_subnets %}
-                        <option value="{{ top_level_subnet.id }}">{{ top_level_subnet.subnet }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="btn btn-success mb-2">Add Subnet</button>
-            </form>
-        </div>
-    </div
-
-        <!-- Display Top Level Subnets -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Top Level Subnets</h5>
-            <ul class="list-group list-group-flush">
-                {% for top_level_subnet in top_level_subnets %}
-                    <li class="list-group-item">
-                        {{ top_level_subnet.subnet }}
-                        <a href="/delete_top_level_subnet/{{ top_level_subnet.id }}" class="btn btn-danger btn-sm float-right">Delete</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <!-- Display Subnets -->
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Subnets</h5>
-            <ul class="list-group list-group-flush">
-                {% for subnet in subnets %}
-                    <li class="list-group-item">
-                        {{ subnet.name }} ({{ subnet.subnet }}) VLAN: {{ subnet.vlan }}
-                        <a href="/delete_subnet/{{ subnet.id }}" class="btn btn-danger btn-sm float-right">Delete</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-<div class="my-4">
-    <a href="/export_csv" class="btn btn-info">Export Subnets as CSV</a>
-</div>
-{% endblock %}
+    {% endfor %}
+</body>
+</html>
