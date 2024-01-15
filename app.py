@@ -61,6 +61,23 @@ def delete_top_level_subnet(id):
     db.session.commit()
     return redirect(url_for('index'))
 
+@app.route('/export_csv')
+def export_csv():
+    si = StringIO()
+    cw = csv.writer(si)
+    cw.writerow(['Subnet Name', 'Subnet Address', 'VLAN', 'Top Level Subnet'])
+
+    subnets = Subnet.query.all()
+    for subnet in subnets:
+        top_level_subnet = TopLevelSubnet.query.get(subnet.parent_id)
+        cw.writerow([subnet.name, subnet.subnet, subnet.vlan, top_level_subnet.subnet])
+
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=subnets.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
+
 if __name__ == '__main__':
     with app.app_context():
         create_tables()
