@@ -37,4 +37,5 @@
             <li>{{ subnet.name }} ({{ subnet.subnet }}) VLAN: {{ subnet.vlan }} <a href="/delete_subnet/{{ subnet.id }}">Delete</a></li>
         {% endfor %}
     </ul>
+<a href="/export_csv">Export Subnets as CSV</a>
 {% endblock %}
