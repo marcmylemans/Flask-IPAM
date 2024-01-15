@@ -36,5 +36,7 @@ def delete_ip(id):
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    create_tables()  # Create tables before running the application
+    with app.app_context():
+        create_tables()  # Create tables within the application context
     app.run(debug=True)
+
