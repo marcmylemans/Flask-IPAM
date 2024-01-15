@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <h2>IP Address Management</h2>
+    <form action="/add" method="post">
+        <input type="text" name="ip_address" placeholder="Enter IP Address" required>
+        <input type="submit" value="Add IP">
+    </form>
+    <ul>
+        {% for ip in ips %}
+            <li>{{ ip.address }} <a href="/delete/{{ ip.id }}">Delete</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
